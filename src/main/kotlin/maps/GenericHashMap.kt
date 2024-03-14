@@ -1,68 +1,63 @@
 package maps
 
-abstract class GenericHashMap<K, V>(private val bucketFactory: () -> CustomMutableMap<K, V>) :
+typealias BucketFactory<K, V> = () -> CustomMutableMap<K, V>
+
+const val NORMAL_ARRAY_SIZE = 16
+const val LOAD_FACTOR = 0.75
+
+abstract class GenericHashMap<K, V>(private val bucketFactory: BucketFactory<K, V>) :
     CustomMutableMap<K, V> {
-    private var capacity = 16
-    private var size: Int = 0
-    private val loadFactor: Int = 2
-    private var buckets: Array<CustomMutableMap<K, V>> =
-        Array(capacity) { bucketFactory() }
+    protected var bucketArr: Array<CustomMutableMap<K, V>> =
+        Array(NORMAL_ARRAY_SIZE) { bucketFactory() }
 
     override val entries: Iterable<Entry<K, V>>
-        get() = buckets.flatMap { it.entries }
+        get() = bucketArr.asIterable().flatMap { it.entries }
     override val keys: Iterable<K>
         get() = entries.map { it.key }
     override val values: Iterable<V>
         get() = entries.map { it.value }
+    protected val capacity
+        get() = bucketArr.size
+    open var numElems = 0
+        set(value) {
+            field = value
+            if (numElems > capacity * LOAD_FACTOR) {
+                this.resize(capacity * 2)
+            }
+        }
 
-    override fun contains(key: K): Boolean {
-        val bucketIndex = key.hashCode() % capacity
-        return buckets[bucketIndex].contains(key)
+    open fun resize(newCapacity: Int) {
+        val oldEntries = this.entries
+        bucketArr = Array(newCapacity) { bucketFactory() }
+        oldEntries.forEach { this.put(it) }
     }
+
+    private fun getBucket(key: K): CustomMutableMap<K, V> = bucketArr[key.hashCode() % capacity]
+
+    override fun get(key: K): V? = this.getBucket(key)[key]
 
     override fun remove(key: K): V? {
-        val bucketIndex = key.hashCode() % capacity
-        val removedValue = buckets[bucketIndex].remove(key)
-        if (removedValue != null) size--
-        return removedValue
+        numElems--
+        return this.getBucket(key).remove(key)
     }
 
-    override fun put(entry: Entry<K, V>): V? = put(entry.key, entry.value)
+    override fun contains(key: K): Boolean = this.getBucket(key).contains(key)
 
-    override fun put(key: K, value: V): V? {
-        val bucketIndex = key.hashCode() % capacity
-        val returnValue = buckets[bucketIndex].put(key, value)
-        size++
-        if (size == capacity) {
-            val prevEntries = entries
-
-            // increase capacity
-            capacity *= loadFactor
-            buckets = Array(capacity) { bucketFactory() }
-
-            prevEntries.forEach { put(it) }
+    override fun set(
+        key: K,
+        value: V,
+    ): V? {
+        val setVal = this.getBucket(key).set(key, value)
+        if (setVal == null) {
+            numElems++
         }
-        return returnValue
+        return setVal
     }
 
-    override fun set(key: K, value: V): V? = put(key, value)
+    override fun put(entry: Entry<K, V>): V? = this.set(entry.key, entry.value)
 
-    override fun get(key: K): V? {
-        val bucketIndex = key.hashCode() % capacity
-        return buckets[bucketIndex][key]
-    }
-}
-
-class HashMapBackedByLists2<K, V> : GenericHashMap<K, V>({ ListBasedMap() })
-
-fun main() {
-    val hml = HashMapBackedByLists2<String, Int>()
-    val entries = (1..10).map {
-        Entry(it.toString(), it)
-    }
-    entries.forEach(hml::put)
-    val values = entries.map { it.value }
-
-    println(values)
-    println(hml.values.sorted())
+    override fun put(
+        key: K,
+        value: V,
+    ): V? = this.set(key, value)
 }

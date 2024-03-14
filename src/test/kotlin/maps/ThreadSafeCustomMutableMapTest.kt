@@ -1,6 +1,6 @@
 package maps
 
-/*
+
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -130,42 +130,74 @@ abstract class ThreadSafeCustomMutableMapTest {
         runConcurrencyTest(
             repeatRuns = 10,
             threadBodies = listOf(adderBody, removerBody),
-            initialEntries = (chunkSize..<3 * chunkSize).map { Entry(it, it.toString()) },
-            expectedInFinalResult = (0..<chunkSize).map { Entry(it, it.toString()) }.toSet(),
-            notExpectedInFinalResult = (chunkSize * 2..<3 * chunkSize).map { Entry(it, it.toString()) }.toSet(),
+            initialEntries = (chunkSize..<3 * chunkSize).map {
+                Entry(
+                    it,
+                    it.toString()
+                )
+            },
+            expectedInFinalResult = (0..<chunkSize).map {
+                Entry(
+                    it,
+                    it.toString()
+                )
+            }.toSet(),
+            notExpectedInFinalResult = (chunkSize * 2..<3 * chunkSize).map {
+                Entry(
+                    it,
+                    it.toString()
+                )
+            }.toSet(),
         )
     }
 
     @Test
     fun `eight threads add, eight threads remove`() {
         val chunkSize = 1 shl 12
-        val adderBodies: List<(CustomMutableMap<Int, String>) -> Unit> = (0..<8).map { seed ->
-            { theMap ->
-                addElementsInRandomOrder(
-                    map = theMap,
-                    lowerBound = 0,
-                    numElements = 2 * chunkSize,
-                    seed = seed,
-                )
+        val adderBodies: List<(CustomMutableMap<Int, String>) -> Unit> =
+            (0..<8).map { seed ->
+                { theMap ->
+                    addElementsInRandomOrder(
+                        map = theMap,
+                        lowerBound = 0,
+                        numElements = 2 * chunkSize,
+                        seed = seed,
+                    )
+                }
             }
-        }
-        val removerBodies: List<(CustomMutableMap<Int, String>) -> Unit> = (8..<16).map { seed ->
-            { theMap ->
-                removeElementsInRandomOrder(
-                    map = theMap,
-                    lowerBound = chunkSize,
-                    numElements = 3 * chunkSize,
-                    seed = seed,
-                )
+        val removerBodies: List<(CustomMutableMap<Int, String>) -> Unit> =
+            (8..<16).map { seed ->
+                { theMap ->
+                    removeElementsInRandomOrder(
+                        map = theMap,
+                        lowerBound = chunkSize,
+                        numElements = 3 * chunkSize,
+                        seed = seed,
+                    )
+                }
             }
-        }
         runConcurrencyTest(
             repeatRuns = 4,
             threadBodies = adderBodies + removerBodies,
-            initialEntries = (chunkSize..<3 * chunkSize).map { Entry(it, it.toString()) },
-            expectedInFinalResult = (0..<chunkSize).map { Entry(it, it.toString()) }.toSet(),
-            notExpectedInFinalResult = (chunkSize * 2..<3 * chunkSize).map { Entry(it, it.toString()) }.toSet(),
+            initialEntries = (chunkSize..<3 * chunkSize).map {
+                Entry(
+                    it,
+                    it.toString()
+                )
+            },
+            expectedInFinalResult = (0..<chunkSize).map {
+                Entry(
+                    it,
+                    it.toString()
+                )
+            }.toSet(),
+            notExpectedInFinalResult = (chunkSize * 2..<3 * chunkSize).map {
+                Entry(
+                    it,
+                    it.toString()
+                )
+            }.toSet(),
         )
     }
 }
-*/
+

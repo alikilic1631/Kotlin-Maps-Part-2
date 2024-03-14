@@ -1,67 +1,66 @@
 package maps
 
-import java.util.NoSuchElementException
-
 interface Node<T> {
-    var to: ValueNode<T>?
+    var next: ValueNode<T>?
 }
 
-class RootNode<T>(override var to: ValueNode<T>? = null) : Node<T>
+class RootNode<T>(override var next: ValueNode<T>? = null) : Node<T>
 
-class ValueNode<T>(val value: T, override var to: ValueNode<T>? = null) :
+class ValueNode<T>(val value: T, override var next: ValueNode<T>? = null) :
     Node<T>
 
-class CustomLinkedList<T>(val root: RootNode<T> = RootNode()) :
-    MutableIterable<T> {
-    fun isEmpty() = root.to == null
+class CustomLinkedList<T> : MutableIterable<T> {
+    private var root: RootNode<T> = RootNode()
 
-    fun head() = this.root.to
+    private var head: ValueNode<T>?
+        get() = root.next
+        set(valNode) {
+            root.next = valNode as ValueNode<T>
+        }
 
-    fun add(new_value: T) {
-        val newNode: ValueNode<T> = ValueNode(new_value, this.root.to)
-        this.root.to = newNode
+    fun isEmpty() = head == null
+
+    fun add(value: T) {
+        head = ValueNode(value, head)
     }
 
-    fun remove(): T {
-        if (this.isEmpty()) {
-            throw UnsupportedOperationException()
-        } else {
-            val removed = this.root.to!!.value
-            this.root.to = this.root.to!!.to
-            return removed
+    fun peek(): ValueNode<T>? {
+        return head
+    }
+
+    fun remove(): T? {
+        try {
+            return head?.value
+        } finally {
+            head = head?.next
         }
     }
 
-    override fun iterator(): MutableIterator<T> {
-        return object : MutableIterator<T> {
-            var current: Node<T>? = root
-            var lastReturn: Node<T>? = null
+    override fun iterator(): MutableIterator<T> =
+        object : MutableIterator<T> {
+            var previous: Node<T>? = null
+            var current: Node<T> = this@CustomLinkedList.root
 
-            override fun hasNext(): Boolean = current?.to != null
+            override fun hasNext(): Boolean = current.next != null
 
             override fun next(): T {
                 if (!hasNext()) {
                     throw NoSuchElementException()
-                } else {
-                    lastReturn = current?.to
-                    current = current?.to
-                    return (current as ValueNode<T>?)?.value!!
                 }
+                previous = current
+                current = current.next as Node<T>
+                return (current as ValueNode<T>).value
             }
 
             override fun remove() {
-                if (lastReturn == null || lastReturn == root) {
+                if (!isEmpty()) {
                     throw UnsupportedOperationException()
+                } else if (previous == this@CustomLinkedList.root) {
+                    current = this@CustomLinkedList.root
+                    previous = null
                 } else {
-                    var tempNode: Node<T> = root
-                    while (tempNode.to != lastReturn) {
-                        tempNode =
-                            tempNode.to ?: throw IllegalStateException()
-                    }
-                    tempNode.to = lastReturn!!.to
-                    lastReturn
+                    previous!!.next = current.next
                 }
             }
         }
-    }
 }

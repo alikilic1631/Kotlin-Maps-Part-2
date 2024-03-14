@@ -3,46 +3,52 @@ package maps;
 import org.jetbrains.annotations.Nullable;
 
 public class TreeMapNode<K, V> {
-    public K key;
-    public V value;
 
-    @Nullable
-    public TreeMapNode<K, V> leftNode;
+    private K key;
+    private V value;
+    private TreeMapNode<K, V> leftNode;
+    private TreeMapNode<K, V> rightNode;
 
-    @Nullable
-    public TreeMapNode<K, V> rightNode;
-
-    void setLeft(TreeMapNode<K, V> left) {
+    public TreeMapNode(K key,V value, TreeMapNode<K, V> left, TreeMapNode<K, V> right) {
+        this.key = key;
+        this.value = value;
         this.leftNode = left;
-    }
-
-    void setRight(TreeMapNode<K, V> right) {
         this.rightNode = right;
     }
 
-    @Nullable
-    TreeMapNode<K, V> getLeft() {
+    public void setKey(K key){
+        this.key = key;
+    }
+
+    public void setValue(V value){
+        this.value = value;
+    }
+
+    public void setLeft(TreeMapNode<K, V> left) {
+        this.leftNode = left;
+    }
+
+    public void setRight(TreeMapNode<K, V> right) {
+        this.rightNode = right;
+    }
+
+    public TreeMapNode<K, V> getLeft(){
         return this.leftNode;
     }
 
-    @Nullable
-    TreeMapNode<K, V> getRight() {
+    public TreeMapNode<K, V> getRight(){
         return this.rightNode;
     }
 
-    K getKey() {
+    public K getKey(){
         return this.key;
     }
 
-    V getValue() {
+    public V getValue(){
         return this.value;
     }
 
-    void setKey(K nodeKey) {
-        this.key = nodeKey;
-    }
 
-    void setValue(V nodeValue) {
-        this.value = nodeValue;
-    }
+
+
 }

@@ -1,6 +1,7 @@
 package maps
 
-data class Entry<K, V>(val key: K, val value: V)
+
+data class Entry<K, V>(val key: K, var value: V)
 
 interface CustomMutableMap<K, V> {
     // Provides read access to all entries of the map
